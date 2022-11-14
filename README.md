@@ -14,6 +14,10 @@ python3 TranscribeAseba.py (mapping) (cbcl) (ysr)
 
 Output json will be written to the 'output/' folder.
 
+Probably, the first time you do this it will fail. You will need to adjust the 'mapping' file so that the values describe python expressions that produce the value ASEBA expects.
+
+N.B. your questionnaire may contain comment fields. These values may contain identifiable info, so you may wish to edit that out before you import the data in to ASEBA.
+
 # Dependencies:
 
 The following packages are required:

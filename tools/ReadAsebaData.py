@@ -5,7 +5,7 @@ import re
 import sys
 path = sys.argv[1]
 
-#This script reads ASEBA data from a file and outputs it to a CSV file. It is not data for the redcap > ASEBA transcription process. It was helpful during development.
+#This script reads ASEBA data from a file and outputs it to a CSV file.
 
 #source: https://hackersandslackers.com/extract-data-from-complex-json-python/
 def extract_values(obj, key):

@@ -7,18 +7,18 @@ def asebadictformat(mapping,cbcldat,ysrdat=None):
     # print("cbclisportstimea is %s" % int(cbcldat['cbclisportstimea']))
     # print("sportstimea is %s" % arithcode(-1,'cbclisportstimea',cbcldat))
     ppf = pprint.PrettyPrinter(indent=4)
-    
+
     #ppf.pprint(mapping['3020']['SourceField'])
     #ppf.pprint(arithcode(-1,'cbclfuisportsabilitya',cbcldat))
-    
+
     #ppf.pprint(mapping[[key for key,value in mapping.items() if key.startswith("3")]])
     #ppf.pprint([getmappings(i,ysrdat,mapping) for i in mapping if i[:1]=="5"])
 
-    recordid=getmappings(1001,cbcldat,mapping)['Value']
+    recordid=getmappings('1001',cbcldat,mapping)['Value']
     age=getmappings(3005,cbcldat,mapping)['Value']
     gender=getmappings(3004,cbcldat,mapping)['Value']
     genderstring=genderrecode(gender,recordid)
-    
+
     try:
         if int(age) < 6 or int(age) > 18:
             warnings.warn("Record %s age out of range" % recordid,UserWarning)
@@ -26,14 +26,14 @@ def asebadictformat(mapping,cbcldat,ysrdat=None):
         warnings.warn("Record %s age improperly formatted" % recordid,UserWarning)
     except ValueError:
         warnings.warn("Record %s age missing or misformatted" % recordid,UserWarning)
-    
+
     formslist=[cbcldictformat(cbcldat,mapping)]
     if ysrdat!=None:
         #print('appending ysr data')
         formslist.insert(0,ysrdictformat(ysrdat,mapping,gender,age))
     #pp.pprint(ysrdictformat(ysrdat))
-    
-    
+
+
     dob=getmappings(3009,cbcldat,mapping)['Value']
     dict={'DateOfBirth': dob+'T00:00:00',
         'Ethnicity': '',
@@ -55,7 +55,7 @@ def asebadictformat(mapping,cbcldat,ysrdat=None):
                                  'Middle': '',
                                  'NickName': '',
                                  'Title': ''}}
-    
+
     return dict;
 
 def ysrdictformat(dat,mapping,gender,age):
@@ -70,7 +70,7 @@ def ysrdictformat(dat,mapping,gender,age):
                          'FormInstrument': {   'Answers': [{"Comment": "", "QuestionId": 5004, "Value": gender},
                                                            {"Comment": "", "QuestionId": 5005, "Value": age}] +
                                                [getmappings(i,dat,mapping) for i in mapping if i[:1]=="5"],# All the YSR id's start with 5
-                         "Id": "69e3fe20-0206-4a5b-a62e-abcaed7aab79"}, 
+                         "Id": "69e3fe20-0206-4a5b-a62e-abcaed7aab79"},
                          'Relationship': 'Self',
                          'School': '',
                          'Society': {'Id': '622adb6d-dede-48e3-ae34-e80cdeb37ed8'},
@@ -90,7 +90,7 @@ def cbcldictformat(dat,mapping):
                          'ContactName': '',
                          'ContactPhone': '',
                          'EvaluationId': '',
-                         'FormInstrument': {   'Answers': [getmappings(i,dat,mapping) for i in mapping if i[:1]=="3"], 
+                         'FormInstrument': {   'Answers': [getmappings(i,dat,mapping) for i in mapping if i[:1]=="3"],
                                                'Id': '07855877-88cf-458a-8d4e-93be0af21fa6'},
                          'Relationship': '', #currently not coded
                          'School': '',
@@ -102,7 +102,7 @@ def cbcldictformat(dat,mapping):
                          'UserDefinedText2': ''}
     dict['FormInstrument']['Answers']=removeEmptyValues(dict['FormInstrument']['Answers'])
     return dict;
-    
+
 def genderrecode(gender,record):
     if gender=='1':
         return 'M'
@@ -125,25 +125,35 @@ def arithcode(y,string,dat):
 
 def removeEmptyValues(listarg):
     return [item for item in listarg if item['Value']!='' and item['Value']!='999' and item['Value']!='NA']
-    
+
 
 def getmappings(id,dat,mapping):
+    #What columns are we looking at in dat for comment and value?
     comment=mapping[str(id)]['SourceCommentField']
     value=mapping[str(id)]['SourceField']
-
+    #E.g. comment could be "dat['cbcl_cage']"
+    
     if comment:
-        commentv=eval(comment)
+        try:
+            commentv=eval(comment) # E.g. evaluate dat['cbcl_cage'] to get that column value
+        except KeyError as ke:
+            warnings.warn("Couldn't find column %s in data file" % ke)
+            exit(1)
     else:
         commentv=comment
-        
+
     if value:
-        valuev=eval(value)
+        try:
+            valuev=eval(value)
+        except KeyError as ke:
+            warnings.warn("Couldn't find column %s in data file" % ke)
+            exit(1)
     else:
         valuev=value
     #print(value)
     #print(valuev)
     return({'Comment': commentv, 'QuestionId':int(id), 'Value': valuev})
-    
+
 def sdlabrelcalc(string,dat):
     if dat[string+'relation___1']=="1":
         return '1'
@@ -159,7 +169,7 @@ def sdlabrelcalc(string,dat):
         return '6'
     else:
         return ''
-        
+
 def sdlabsibcode(string,dat):
     try:
         x=str(int(dat[string])-1)

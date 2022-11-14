@@ -10,6 +10,8 @@ from AsebaParseScripts import *
 
 #This script will attempt to convert a csv file from a digital data entry platform (such as Redcap) in to a set of json files readable by the ASEBA scoring program. It depends on AsebaParseScripts.py, and additionally requires a mapping file. CBCL and YSR data output files as well as the mapping file are specified at the command line.
 
+#Debugging: If you get keyerrors it is likely that either a) your mapping file is incorrect or b) your csv files aren't encoded in UTF-8. To fix this, open the csv in excel, save as, and make sure the file type is 'CSV UTF-8'
+
 #Configure Warnings
 def warning_on_one_line(message, category, filename, lineno, file=None, line=None):
     return ' %s:%s: %s:%s\n' % (os.path.basename(filename), lineno, category.__name__, message)
@@ -22,42 +24,62 @@ parser.add_argument("mapping", help="Specify the CSV file with the study variabl
 parser.add_argument("cbcl", help="Specify the CSV with the CBCL school age (6-18) form data.")
 parser.add_argument("ysr", help="Specify the CSV with the YSR school age (6-18) form data.")
 args = parser.parse_args()
+# If you don't like arguments you can comment all the lines between 'read args' and here and hard code the file paths here:
+#E.g. :
+#mappingfile=/path/to/your/mappingfile.csv
+mappingfile=args.mapping
+cbclfile=args.cbcl
+ysrfile=args.ysr
 
 #Setup printer (just for debug output)
 pp = pprint.PrettyPrinter(indent=4)
 
 #Read Mapping
 mapping={}
-with open(args.mapping, 'r') as csvfile:
-    csvReader=csv.DictReader(csvfile)
-    for rows in csvReader:
-        id = rows['QuestionId']
-        mapping[id] = rows
-
+try:
+    with open(mappingfile, 'r', encoding='utf-8-sig') as csvfile:
+        csvReader=csv.DictReader(csvfile)
+        for rows in csvReader:
+            id = rows['QuestionId']
+            mapping[id] = rows
+except FileNotFoundError:
+    print("Error: Mapping file %s not found" % mappingfile)
+    exit(1)
 
 recordindex=str(mapping['1000']['SourceField'])
-
-
-#scrubadub.clean("John is a tool", replace_with='identifier')
+#print("recordindex is %s" % recordindex)
 
 #Read CBCL Data
 cbcldata={}
-with open(args.cbcl, 'r') as csvfile:
-    csvReader=csv.DictReader(csvfile)
-    for rows in csvReader:
-        #id = scrubadub.clean(rows['subid'], replace_with='identifier')
-        id = rows[recordindex]
-        cbcldata[id] = rows
+try:
+    with open(cbclfile, 'r', encoding='utf-8-sig') as csvfile:
+        csvReader=csv.DictReader(csvfile)
+        for rows in csvReader:
+            #id = scrubadub.clean(rows['subid'], replace_with='identifier')
+            id = rows[recordindex]
+            cbcldata[id] = rows
+except FileNotFoundError:
+    print("Error: CBCL file %s not found" % cbclfile)
+    exit(1)
+except KeyError:
+    print("The mapping file says ID column is '%s', but couldn't find that column in the CBCL file (%s). Adjust question 1000 in the mapping to match the id column of the CBCL file. If they appear to match, there may be a problem with the file encoding (see comments at head of script)" % (recordindex,cbclfile)) 
 
 #pp.pprint(cbcldata['3001'])
 
 #Read YSR Data
 ysrdata={}
-with open(args.ysr, 'r') as csvfile:
-    csvReader=csv.DictReader(csvfile)
-    for rows in csvReader:
-        id = rows[recordindex]
-        ysrdata[id] = rows
+try:
+    with open(ysrfile, 'r', encoding='utf-8-sig') as csvfile:
+        csvReader=csv.DictReader(csvfile)
+        for rows in csvReader:
+            id = rows[recordindex]
+            ysrdata[id] = rows
+except FileNotFoundError:
+    print("Error: YSR file %s not found" % ysrfile)
+    exit(1)
+except KeyError:
+    print("The mapping file says ID column is '%s', but couldn't find that column in the YSR file (%s). Adjust question 1000 in the mapping to match the id column of the CBCL file. If they appear to match, there may be a problem with the file encoding (see comments at head of script)" % (recordindex,ysrfile))
+    exit(1)
 
 #Try to clean out identifiable info.
 

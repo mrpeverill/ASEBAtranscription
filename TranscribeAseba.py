@@ -85,8 +85,8 @@ except KeyError:
 
 
 #Make a Subject List
-slist=list(cbcldata.keys())
-ysrslist=list(ysrdata.keys())
+slist=list(filter(None,list(cbcldata.keys())))
+ysrslist=list(filter(None,list(ysrdata.keys())))
 cbclmisslist = np.setdiff1d(ysrslist,slist)
 
 if len(cbclmisslist)!=0:
@@ -119,3 +119,4 @@ with open(os.path.join('output','[Content_Types].xml'), 'w') as fp:
 #with open("9999.json") as json_file:
 #   data = json.load(json_file)
 
+print("Finished. Output file must be compressed to zip before import")

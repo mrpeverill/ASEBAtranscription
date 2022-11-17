@@ -14,11 +14,14 @@ python3 TranscribeAseba.py (mapping) (cbcl) (ysr)
 
 All input files must be in UTF-8 (redcap should output this, but if it's not working you should open in excel and save as 'csv utf-8'.
 
-Output json will be written to the 'output/' folder.
+Output json will be written to the 'output/' folder. *This folder must be compressed to a zip file before import*.
 
 Probably, the first time you do this it will fail. You will need to adjust the 'mapping' file so that the values describe python expressions that produce the value ASEBA expects.
 
 N.B. your questionnaire may contain comment fields. These values may contain identifiable info, so you may wish to edit that out before you import the data in to ASEBA.
+
+Example Files are included.
+
 
 # About the 'mapping' file.
 

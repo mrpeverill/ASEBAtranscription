@@ -27,7 +27,7 @@ Example Files are included.
 
 The mapping file is a three column csv document which contains three columns:
 
-* *$QuestionId$*: this corresponds to question ID's in the output json file (set by ASEBA -- don't change)
+* *QuestionId*: this corresponds to question ID's in the output json file (set by ASEBA -- don't change)
 * *SourceField*: python code that evaluates to the value you want. In this column dat['X'] corresponds to the values of the column named 'X' in the redcap data files. Some values will need to be recoded and you can include python code to do that here. There are a few helper functions included to help do this:
   * arithcode: This adds a constant to a numeric value in the redcap data and returns a string with the resulting number. Used for recording
   * sdlabrelcalc: This is only used for the 'relationship' field and performs a 1 for 1 recode.
